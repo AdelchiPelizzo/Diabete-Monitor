@@ -10,38 +10,69 @@ import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
 
 @Composable
 fun GlucoseChart(
-    entries: List<Entry>   // ✅ FIX: now chart receives data, not ViewModel
+    entries: List<Entry>,
+    labels: List<String>
 ) {
 
     AndroidView(
         factory = { context ->
+
             LineChart(context).apply {
+
                 description.isEnabled = false
+                legend.isEnabled = false
+                axisRight.isEnabled = false
+
                 setTouchEnabled(true)
                 setPinchZoom(true)
-                legend.isEnabled = true
+                setScaleEnabled(true)
+
+                xAxis.apply {
+                    granularity = 1f
+                    setDrawGridLines(false)
+                    setAvoidFirstLastClipping(true)
+                }
+
+                axisLeft.axisMinimum = 50f
+                axisLeft.axisMaximum = 650f   // keeps your expanded medical range
             }
         },
+
         modifier = Modifier
             .fillMaxWidth()
-            .height(250.dp),
+            .height(260.dp),
+
         update = { chart ->
 
-            // If no data, clear chart safely
             if (entries.isEmpty()) {
                 chart.clear()
                 chart.invalidate()
                 return@AndroidView
             }
 
+            // -----------------------------
+            // FIXED X AXIS (NO TIMESTAMP)
+            // -----------------------------
+            chart.xAxis.valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    val index = value.toInt()
+                    return labels.getOrNull(index) ?: ""
+                }
+            }
+
             val dataSet = LineDataSet(entries, "Glucose (mg/dL)").apply {
+
+                lineWidth = 3f
+                circleRadius = 5f
+
                 setDrawValues(false)
-                lineWidth = 2f
-                setDrawCircles(true)
-                circleRadius = 4f
+                setDrawFilled(true)
+
+                mode = LineDataSet.Mode.CUBIC_BEZIER
             }
 
             chart.data = LineData(dataSet)

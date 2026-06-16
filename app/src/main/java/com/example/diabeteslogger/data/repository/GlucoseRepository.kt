@@ -10,11 +10,25 @@ class GlucoseRepository(
     fun getAll(): Flow<List<GlucoseEntry>> = dao.getAll()
 
     suspend fun insert(value: Int) {
+
+        val now = System.currentTimeMillis()
+
+        val hour = java.util.Calendar.getInstance().apply {
+            timeInMillis = now
+        }.get(java.util.Calendar.HOUR_OF_DAY)
+
+        val session = if (hour < 12) "AM" else "PM"
+
         dao.insert(
             GlucoseEntry(
                 value = value,
-                timestamp = System.currentTimeMillis()
+                timestamp = now,
+                session = session
             )
         )
+    }
+
+    suspend fun delete(entry: GlucoseEntry) {
+        dao.delete(entry)
     }
 }
