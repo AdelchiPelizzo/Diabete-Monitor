@@ -14,11 +14,10 @@ import com.example.diabeteslogger.ui.viewmodel.FilterType
 import com.github.mikephil.charting.data.Entry
 import java.text.SimpleDateFormat
 import java.util.*
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.platform.LocalContext
-import com.example.diabeteslogger.util.CsvExporter
+
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SegmentedButtonDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,33 +25,26 @@ fun HomeScreen(
     viewModel: LogViewModel,
     modifier: Modifier = Modifier
 ) {
+
     var showDatePicker by remember { mutableStateOf(false) }
     var tempStart by remember { mutableStateOf<Long?>(null) }
     var isPickingStart by remember { mutableStateOf(true) }
 
     val filteredEntries by viewModel.filteredEntries.collectAsState()
 
+    val currentFilter by viewModel.filter.collectAsState()
+    val range by viewModel.dateRange.collectAsState()
+
+    android.util.Log.d(
+        "UI_DEBUG",
+        "filter=$currentFilter range=$range"
+    )
+
     var showDialog by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("") }
 
-
-    val context = LocalContext.current
-
-    val exportLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("text/csv")
-    ) { uri: Uri? ->
-
-        uri?.let {
-            CsvExporter.export(
-                context = context,
-                entries = filteredEntries,
-                uri = it
-            )
-        }
-    }
-
     // ----------------------------
-    // GROUP BY DAY (FIXED)
+    // GROUP BY DAY
     // ----------------------------
     val groupedByDay = remember(filteredEntries) {
         filteredEntries.groupBy { entry ->
@@ -66,19 +58,37 @@ fun HomeScreen(
         }.toSortedMap()
     }
 
+    val dayLabels = remember(groupedByDay) {
+        val sdf = SimpleDateFormat("dd/MM", Locale.getDefault())
+        groupedByDay.keys.map { sdf.format(Date(it)) }
+    }
+
     // ----------------------------
-    // CHART DATA (AVG PER DAY)
+    // MORNING / EVENING / AVERAGE
     // ----------------------------
-    val chartEntries = remember(groupedByDay) {
+    val morningEntries = remember(groupedByDay) {
+        groupedByDay.entries.mapIndexedNotNull { index, (_, list) ->
+            val sorted = list.sortedBy { it.timestamp }
+            sorted.getOrNull(0)?.let {
+                Entry(index.toFloat(), it.value.toFloat())
+            }
+        }
+    }
+
+    val eveningEntries = remember(groupedByDay) {
+        groupedByDay.entries.mapIndexedNotNull { index, (_, list) ->
+            val sorted = list.sortedBy { it.timestamp }
+            sorted.getOrNull(1)?.let {
+                Entry(index.toFloat(), it.value.toFloat())
+            }
+        }
+    }
+
+    val averageEntries = remember(groupedByDay) {
         groupedByDay.entries.mapIndexed { index, (_, list) ->
             val avg = list.map { it.value }.average().toFloat()
             Entry(index.toFloat(), avg)
         }
-    }
-
-    val dayLabels = remember(groupedByDay) {
-        val sdf = SimpleDateFormat("dd/MM", Locale.getDefault())
-        groupedByDay.keys.map { sdf.format(Date(it)) }
     }
 
     Column(modifier = modifier.padding(16.dp)) {
@@ -86,69 +96,59 @@ fun HomeScreen(
         Text("Glucose Tracker", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(Modifier.height(12.dp))
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+
+        SingleChoiceSegmentedButtonRow(
             modifier = Modifier.fillMaxWidth()
         ) {
 
-            Button(
-                onClick = { viewModel.setFilter(FilterType.WEEK) },
-                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
-            ) {
-                Text("Week", style = MaterialTheme.typography.labelSmall)
-            }
+            val options = listOf("Week", "Month", "Year", "Range")
 
-            Button(
-                onClick = { viewModel.setFilter(FilterType.MONTH) },
-                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
-            ) {
-                Text("Month", style = MaterialTheme.typography.labelSmall)
-            }
+            options.forEachIndexed { index, label ->
 
-            Button(
-                onClick = { viewModel.setFilter(FilterType.YEAR) },
-                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
-            ) {
-                Text("Year", style = MaterialTheme.typography.labelSmall)
-            }
+                val selected =
+                    when (label) {
+                        "Week" -> viewModel.filter.value == FilterType.WEEK
+                        "Month" -> viewModel.filter.value == FilterType.MONTH
+                        "Year" -> viewModel.filter.value == FilterType.YEAR
+                        "Range" -> false // custom handled separately
+                        else -> false
+                    }
 
-            Button(
-                onClick = {
-                    showDatePicker = true
-                    isPickingStart = true
-                },
-                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
-            ) {
-                Text("Range", style = MaterialTheme.typography.labelSmall)
+                SegmentedButton(
+                    selected = selected,
+                    onClick = {
+                        when (label) {
+                            "Week" -> viewModel.setFilter(FilterType.WEEK)
+                            "Month" -> viewModel.setFilter(FilterType.MONTH)
+                            "Year" -> viewModel.setFilter(FilterType.YEAR)
+                            "Range" -> {
+                                showDatePicker = true
+                                isPickingStart = true
+                            }
+                        }
+                    },
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = options.size
+                    )
+                ) {
+                    Text(label)
+                }
             }
         }
 
-//        Row(
-//            horizontalArrangement = Arrangement.spacedBy(8.dp),
-//            modifier = Modifier.fillMaxWidth()
-//        ) {
-//            OutlinedButton(
-//                onClick = { showDialog = true },
-//                modifier = Modifier.weight(1f)
-//            ) {
-//                Text("Add glucose")
-//            }
-//
-//            OutlinedButton(onClick = { /* CSV export later */ }) {
-//            Text("Export CSV")
-//        }
-//    }
-
         Spacer(Modifier.height(16.dp))
 
-        GlucoseChart(entries = chartEntries, labels = dayLabels)
+        GlucoseChart(
+            morningEntries = morningEntries,
+            eveningEntries = eveningEntries,
+            averageEntries = averageEntries,
+            labels = dayLabels
+        )
 
         Spacer(Modifier.height(12.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
 
             Button(
                 onClick = { showDialog = true },
@@ -158,9 +158,7 @@ fun HomeScreen(
             }
 
             OutlinedButton(
-                onClick = {
-                    exportLauncher.launch("glucose_log.csv")
-                },
+                onClick = { /* CSV later */ },
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Export CSV")
@@ -168,12 +166,6 @@ fun HomeScreen(
         }
 
         Spacer(Modifier.height(12.dp))
-
-        Spacer(Modifier.height(5.dp))
-
-//        Button(onClick = { showDialog = true }) {
-//            Text("Add glucose")
-//        }
 
         LazyColumn(
             modifier = Modifier
@@ -194,31 +186,20 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth(),
                             color = MaterialTheme.colorScheme.primaryContainer
                         ) {
-                            Text(
-                                "📅 $dateLabel",
-                                modifier = Modifier.padding(12.dp)
-                            )
+                            Text("📅 $dateLabel", modifier = Modifier.padding(12.dp))
                         }
 
                         val sorted = list.sortedBy { it.timestamp }
 
-                        val amEntry = sorted.getOrNull(0)
-                        val pmEntry = sorted.getOrNull(1)
+                        val am = sorted.getOrNull(0)
+                        val pm = sorted.getOrNull(1)
 
-                        amEntry?.let { entry ->
-                            SwipeRow(
-                                label = "🌅 Morning",
-                                entry = entry,
-                                onDelete = { viewModel.deleteEntry(entry) }
-                            )
+                        am?.let {
+                            SwipeRow("🌅 Morning", it) { viewModel.deleteEntry(it) }
                         }
 
-                        pmEntry?.let { entry ->
-                            SwipeRow(
-                                label = "🌙 Evening",
-                                entry = entry,
-                                onDelete = { viewModel.deleteEntry(entry) }
-                            )
+                        pm?.let {
+                            SwipeRow("🌙 Evening", it) { viewModel.deleteEntry(it) }
                         }
                     }
                 }
@@ -257,7 +238,6 @@ fun HomeScreen(
     val state = rememberDatePickerState()
 
     if (showDatePicker) {
-
         DatePickerDialog(
             onDismissRequest = {
                 showDatePicker = false
@@ -265,30 +245,21 @@ fun HomeScreen(
             },
             confirmButton = {
                 Button(onClick = {
+                    val selected = state.selectedDateMillis ?: return@Button
 
-                    val selected = state.selectedDateMillis
+                    if (isPickingStart) {
+                        tempStart = selected
+                        isPickingStart = false
+                    } else {
+                        val start = tempStart ?: selected
+                        val end = selected
 
-                    if (selected != null) {
+                        viewModel.setDateRange(minOf(start, end), maxOf(start, end))
 
-                        if (isPickingStart) {
-                            tempStart = selected
-                            isPickingStart = false
-                        } else {
-
-                            val start = tempStart ?: selected
-                            val end = selected
-
-                            viewModel.setDateRange(
-                                minOf(start, end),
-                                maxOf(start, end)
-                            )
-
-                            showDatePicker = false
-                            tempStart = null
-                            isPickingStart = true
-                        }
+                        showDatePicker = false
+                        tempStart = null
+                        isPickingStart = true
                     }
-
                 }) {
                     Text(if (isPickingStart) "Next" else "Apply")
                 }

@@ -24,22 +24,48 @@ class LogViewModel(
     private val repository: GlucoseRepository
 ) : ViewModel() {
 
+    // -----------------------------
+    // FILTER STATE (preset vs custom)
+    // -----------------------------
     private val _filter = MutableStateFlow(FilterType.WEEK)
     val filter = _filter.asStateFlow()
 
+    // -----------------------------
+    // CUSTOM RANGE STATE
+    // -----------------------------
     private val _dateRange = MutableStateFlow<DateRange?>(null)
     val dateRange = _dateRange.asStateFlow()
 
+    // -----------------------------
+    // SET PRESET FILTER
+    // -----------------------------
     fun setFilter(type: FilterType) {
         _filter.value = type
+
+        // IMPORTANT: clear range when switching presets
+        if (type != FilterType.CUSTOM) {
+            _dateRange.value = null
+        }
+        android.util.Log.d("FILTER_DEBUG", "setFilter -> $type")
     }
 
+    // -----------------------------
+    // SET CUSTOM RANGE
+    // -----------------------------
     fun setDateRange(start: Long, end: Long) {
-        // FIX: include full end day (23:59:59.999)
-        val adjustedEnd = end + TimeUnit.DAYS.toMillis(1) - 1
+
+        val adjustedEnd =
+            end + TimeUnit.DAYS.toMillis(1) - 1
+
         _dateRange.value = DateRange(start, adjustedEnd)
+        _filter.value = FilterType.CUSTOM
+
+        android.util.Log.d("FILTER_DEBUG", "CUSTOM RANGE SET: $start - $adjustedEnd")
     }
 
+    // -----------------------------
+    // DATABASE STREAM
+    // -----------------------------
     val entries: StateFlow<List<GlucoseEntry>> =
         repository.getAll()
             .stateIn(
@@ -48,56 +74,86 @@ class LogViewModel(
                 initialValue = emptyList()
             )
 
+    // -----------------------------
+    // FILTERED DATA (MAIN SOURCE)
+    // -----------------------------
     val filteredEntries: StateFlow<List<GlucoseEntry>> =
         combine(entries, filter, dateRange) { list, f, range ->
 
             val now = System.currentTimeMillis()
 
-            val base = when (f) {
+            val filtered = when (f) {
 
                 FilterType.WEEK ->
-                    list.filter { it.timestamp >= now - 7L * 24 * 60 * 60 * 1000 }
+                    list.filter {
+                        it.timestamp >= now - 7L * 24 * 60 * 60 * 1000
+                    }
 
                 FilterType.MONTH ->
-                    list.filter { it.timestamp >= now - 30L * 24 * 60 * 60 * 1000 }
+                    list.filter {
+                        it.timestamp >= now - 30L * 24 * 60 * 60 * 1000
+                    }
 
                 FilterType.YEAR ->
-                    list.filter { it.timestamp >= now - 365L * 24 * 60 * 60 * 1000 }
+                    list.filter {
+                        it.timestamp >= now - 365L * 24 * 60 * 60 * 1000
+                    }
 
                 FilterType.CUSTOM -> {
-                    range?.let { r ->
-                        list.filter { it.timestamp in r.start..r.end }
-                    } ?: list
+                    val r = range
+                    if (r != null) {
+                        list.filter {
+                            it.timestamp in r.start..r.end
+                        }
+                    } else {
+                        emptyList()
+                    }
                 }
             }
 
-            base.sortedBy { it.timestamp }
+            filtered.sortedBy { it.timestamp }
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
 
+    // -----------------------------
+    // INSERT
+    // -----------------------------
     fun addEntry(value: Int) {
         viewModelScope.launch {
             repository.insert(value)
         }
     }
 
+    // -----------------------------
+    // DELETE
+    // -----------------------------
     fun deleteEntry(entry: GlucoseEntry) {
         viewModelScope.launch {
             repository.delete(entry)
         }
     }
 
+    // -----------------------------
+    // GROUPED VIEW (UI ONLY)
+    // -----------------------------
     fun getDailyGrouped(): Map<String, Pair<GlucoseEntry?, GlucoseEntry?>> {
-        val sdf = java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault())
+
+        val sdf =
+            java.text.SimpleDateFormat("dd/MM", java.util.Locale.getDefault())
 
         return filteredEntries.value
             .groupBy { sdf.format(java.util.Date(it.timestamp)) }
             .mapValues { (_, list) ->
+
                 val sorted = list.sortedBy { it.timestamp }
-                sorted.getOrNull(0) to sorted.getOrNull(1)
+
+                val am = sorted.getOrNull(0)
+                val pm = sorted.getOrNull(1)
+
+                am to pm
             }
     }
 }

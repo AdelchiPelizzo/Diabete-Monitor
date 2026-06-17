@@ -11,10 +11,14 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
+import android.graphics.Color
+import com.example.diabeteslogger.ui.home.GlucoseMarkerView
 
 @Composable
 fun GlucoseChart(
-    entries: List<Entry>,
+    morningEntries: List<Entry>,
+    eveningEntries: List<Entry>,
+    averageEntries: List<Entry>,
     labels: List<String>
 ) {
 
@@ -24,7 +28,8 @@ fun GlucoseChart(
             LineChart(context).apply {
 
                 description.isEnabled = false
-                legend.isEnabled = false
+                legend.isEnabled = true
+
                 axisRight.isEnabled = false
 
                 setTouchEnabled(true)
@@ -38,7 +43,7 @@ fun GlucoseChart(
                 }
 
                 axisLeft.axisMinimum = 50f
-                axisLeft.axisMaximum = 650f   // keeps your expanded medical range
+                axisLeft.axisMaximum = 650f
             }
         },
 
@@ -48,34 +53,61 @@ fun GlucoseChart(
 
         update = { chart ->
 
-            if (entries.isEmpty()) {
+            if (morningEntries.isEmpty()
+                && eveningEntries.isEmpty()
+                && averageEntries.isEmpty()
+            ) {
                 chart.clear()
                 chart.invalidate()
                 return@AndroidView
             }
 
-            // -----------------------------
-            // FIXED X AXIS (NO TIMESTAMP)
-            // -----------------------------
             chart.xAxis.valueFormatter = object : ValueFormatter() {
                 override fun getFormattedValue(value: Float): String {
-                    val index = value.toInt()
-                    return labels.getOrNull(index) ?: ""
+                    return labels.getOrNull(value.toInt()) ?: ""
                 }
             }
 
-            val dataSet = LineDataSet(entries, "Glucose (mg/dL)").apply {
-
+            val morningSet = LineDataSet(morningEntries, "Morning").apply {
+                color = Color.BLUE
+                setCircleColor(Color.BLUE)
                 lineWidth = 3f
                 circleRadius = 5f
-
                 setDrawValues(false)
-                setDrawFilled(true)
-
                 mode = LineDataSet.Mode.CUBIC_BEZIER
             }
 
-            chart.data = LineData(dataSet)
+            val eveningSet = LineDataSet(eveningEntries, "Evening").apply {
+                color = Color.RED
+                setCircleColor(Color.RED)
+                lineWidth = 3f
+                circleRadius = 5f
+                setDrawValues(false)
+                mode = LineDataSet.Mode.CUBIC_BEZIER
+            }
+
+            val avgSet = LineDataSet(averageEntries, "Average").apply {
+                color = Color.DKGRAY
+                setCircleColor(Color.DKGRAY)
+                lineWidth = 2f
+                circleRadius = 4f
+                setDrawValues(false)
+                enableDashedLine(10f, 6f, 0f)
+                mode = LineDataSet.Mode.CUBIC_BEZIER
+            }
+
+            chart.data = LineData(morningSet, eveningSet, avgSet)
+
+            val marker = GlucoseMarkerView(
+                chart.context,
+                labels,
+                morningEntries,
+                eveningEntries,
+                averageEntries
+            )
+
+            chart.marker = marker
+
             chart.invalidate()
         }
     )
