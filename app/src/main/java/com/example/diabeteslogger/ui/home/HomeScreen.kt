@@ -15,10 +15,6 @@ import com.github.mikephil.charting.data.Entry
 import java.text.SimpleDateFormat
 import java.util.*
 
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.SegmentedButtonDefaults
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -31,21 +27,12 @@ fun HomeScreen(
     var isPickingStart by remember { mutableStateOf(true) }
 
     val filteredEntries by viewModel.filteredEntries.collectAsState()
-
     val currentFilter by viewModel.filter.collectAsState()
-    val range by viewModel.dateRange.collectAsState()
-
-    android.util.Log.d(
-        "UI_DEBUG",
-        "filter=$currentFilter range=$range"
-    )
 
     var showDialog by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("") }
 
-    // ----------------------------
-    // GROUP BY DAY
-    // ----------------------------
+    // ---------------- DAY GROUPING ----------------
     val groupedByDay = remember(filteredEntries) {
         filteredEntries.groupBy { entry ->
             Calendar.getInstance().apply {
@@ -63,31 +50,26 @@ fun HomeScreen(
         groupedByDay.keys.map { sdf.format(Date(it)) }
     }
 
-    // ----------------------------
-    // MORNING / EVENING / AVERAGE
-    // ----------------------------
+    // ---------------- AM / PM ----------------
     val morningEntries = remember(groupedByDay) {
         groupedByDay.entries.mapIndexedNotNull { index, (_, list) ->
-            val sorted = list.sortedBy { it.timestamp }
-            sorted.getOrNull(0)?.let {
-                Entry(index.toFloat(), it.value.toFloat())
-            }
+            list.sortedBy { it.timestamp }
+                .firstOrNull()
+                ?.let { Entry(index.toFloat(), it.value.toFloat()) }
         }
     }
 
     val eveningEntries = remember(groupedByDay) {
         groupedByDay.entries.mapIndexedNotNull { index, (_, list) ->
-            val sorted = list.sortedBy { it.timestamp }
-            sorted.getOrNull(1)?.let {
-                Entry(index.toFloat(), it.value.toFloat())
-            }
+            list.sortedBy { it.timestamp }
+                .getOrNull(1)
+                ?.let { Entry(index.toFloat(), it.value.toFloat()) }
         }
     }
 
     val averageEntries = remember(groupedByDay) {
         groupedByDay.entries.mapIndexed { index, (_, list) ->
-            val avg = list.map { it.value }.average().toFloat()
-            Entry(index.toFloat(), avg)
+            Entry(index.toFloat(), list.map { it.value }.average().toFloat())
         }
     }
 
@@ -105,14 +87,13 @@ fun HomeScreen(
 
             options.forEachIndexed { index, label ->
 
-                val selected =
-                    when (label) {
-                        "Week" -> viewModel.filter.value == FilterType.WEEK
-                        "Month" -> viewModel.filter.value == FilterType.MONTH
-                        "Year" -> viewModel.filter.value == FilterType.YEAR
-                        "Range" -> false // custom handled separately
-                        else -> false
-                    }
+                val selected = when (label) {
+                    "Week" -> currentFilter == FilterType.WEEK
+                    "Month" -> currentFilter == FilterType.MONTH
+                    "Year" -> currentFilter == FilterType.YEAR
+                    "Range" -> currentFilter == FilterType.CUSTOM
+                    else -> false
+                }
 
                 SegmentedButton(
                     selected = selected,
@@ -121,16 +102,15 @@ fun HomeScreen(
                             "Week" -> viewModel.setFilter(FilterType.WEEK)
                             "Month" -> viewModel.setFilter(FilterType.MONTH)
                             "Year" -> viewModel.setFilter(FilterType.YEAR)
+
                             "Range" -> {
+                                viewModel.setFilter(FilterType.CUSTOM)
                                 showDatePicker = true
                                 isPickingStart = true
                             }
                         }
                     },
-                    shape = SegmentedButtonDefaults.itemShape(
-                        index = index,
-                        count = options.size
-                    )
+                    shape = SegmentedButtonDefaults.itemShape(index, options.size)
                 ) {
                     Text(label)
                 }
@@ -158,7 +138,7 @@ fun HomeScreen(
             }
 
             OutlinedButton(
-                onClick = { /* CSV later */ },
+                onClick = { },
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Export CSV")
@@ -167,11 +147,7 @@ fun HomeScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(350.dp)
-        ) {
+        LazyColumn(Modifier.height(350.dp)) {
 
             groupedByDay.forEach { (dayMillis, list) ->
 
@@ -180,25 +156,22 @@ fun HomeScreen(
                     val dateLabel = SimpleDateFormat("dd/MM", Locale.getDefault())
                         .format(Date(dayMillis))
 
-                    Column(modifier = Modifier.padding(vertical = 10.dp)) {
+                    Column(Modifier.padding(vertical = 10.dp)) {
 
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             color = MaterialTheme.colorScheme.primaryContainer
                         ) {
-                            Text("📅 $dateLabel", modifier = Modifier.padding(12.dp))
+                            Text("📅 $dateLabel", Modifier.padding(12.dp))
                         }
 
                         val sorted = list.sortedBy { it.timestamp }
 
-                        val am = sorted.getOrNull(0)
-                        val pm = sorted.getOrNull(1)
-
-                        am?.let {
+                        sorted.getOrNull(0)?.let {
                             SwipeRow("🌅 Morning", it) { viewModel.deleteEntry(it) }
                         }
 
-                        pm?.let {
+                        sorted.getOrNull(1)?.let {
                             SwipeRow("🌙 Evening", it) { viewModel.deleteEntry(it) }
                         }
                     }
@@ -214,7 +187,7 @@ fun HomeScreen(
             text = {
                 OutlinedTextField(
                     value = inputText,
-                    onValueChange = { inputText = it.filter { c -> c.isDigit() } },
+                    onValueChange = { inputText = it.filter(Char::isDigit) },
                     label = { Text("mg/dL") }
                 )
             },
@@ -253,7 +226,6 @@ fun HomeScreen(
                     } else {
                         val start = tempStart ?: selected
                         val end = selected
-
                         viewModel.setDateRange(minOf(start, end), maxOf(start, end))
 
                         showDatePicker = false
@@ -296,7 +268,10 @@ private fun SwipeRow(
             ) {
                 Column(Modifier.padding(12.dp)) {
                     Text("$label: ${entry.value}")
-                    Text(SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(entry.timestamp)))
+                    Text(
+                        java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+                            .format(java.util.Date(entry.timestamp))
+                    )
                 }
             }
         }

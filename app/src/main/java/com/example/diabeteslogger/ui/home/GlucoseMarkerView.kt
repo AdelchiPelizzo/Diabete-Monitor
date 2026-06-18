@@ -33,7 +33,7 @@ class GlucoseMarkerView(
         textView.text = """
             📅 $date
 
-            🌅 Morning: ${m?.toInt() ?: "-"}one thing: 
+            🌅 Morning: ${m?.toInt() ?: "-"}: 
             🌙 Evening: ${ev?.toInt() ?: "-"}
             ⚫ Average: ${avg?.toInt() ?: "-"}
         """.trimIndent()

@@ -60,4 +60,6 @@ dependencies {
     kapt("androidx.room:room-compiler:2.7.2")
 
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    implementation("androidx.compose.foundation:foundation")
 }
