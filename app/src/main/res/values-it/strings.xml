@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- App -->
+    <string name="app_name">Monitoraggio Glicemia</string>
+
+    <string name="language">Lingua</string>
+
+    <string name="system_default">Predefinita di sistema</string>
+    <string name="english">Inglese</string>
+    <string name="italian">Italiano</string>
+
+    <!-- Navigation / Screens -->
+    <string name="home">Inizio</string>
+    <string name="analytics">Analitica</string>
+    <string name="settings">Impostazioni</string>
+
+    <!-- Home Screen -->
+    <string name="blood_glucose">Glicemia</string>
+    <string name="add_reading">Valore Glucosio</string>
+    <string name="no_data">Nessun dato disponibile</string>
+    <string name="recent_readings">Ultime misurazioni</string>
+    <string name="export_csv">Esporta CSV</string>
+
+    <!-- Glucose Units -->
+    <string name="glucose_unit_mgdl">mg/dL</string>
+    <string name="glucose_unit_mmoll">mmol/L</string>
+
+    <!-- Analytics Screen -->
+    <string name="average_glucose">Glicemia media</string>
+    <string name="time_in_range">Tempo nell\'intervallo</string>
+    <string name="highest_value">Valore massimo</string>
+    <string name="lowest_value">Valore minimo</string>
+    <string name="insights">Approfondimenti</string>
+
+    <!-- Actions -->
+    <string name="save">Salva</string>
+    <string name="delete">Elimina</string>
+    <string name="edit">Modifica</string>
+    <string name="cancel">Annulla</string>
+
+    <!-- Input -->
+    <string name="enter_glucose_value">Inserisci valore glicemia</string>
+    <string name="select_date">Seleziona data</string>
+
+    <!-- Messages / Errors -->
+    <string name="error_invalid_value">Valore glicemia non valido</string>
+    <string name="error_empty_value">Il valore non può essere vuoto</string>
+
+    <!-- Insights -->
+    <string name="great_control_today">Ottimo controllo oggi</string>
+    <string name="high_readings_detected">Rilevati valori elevati</string>
+    <string name="stable_glucose">Livelli stabili di glicemia</string>
+    <string name="glucose_tracker">Profilo Glicemico</string>
+
+    <string name="filter_week">Sett</string>
+    <string name="filter_month">Mese</string>
+    <string name="filter_year">Anno</string>
+    <string name="filter_range">Periodo</string>
+    <string name="chart_morning">Mattina</string>
+    <string name="chart_evening">Sera</string>
+    <string name="chart_average">Media</string>
+    <string name="marker_unknown">Sconosciuto</string>
+
+    <string name="marker_morning">Mattina</string>
+    <string name="marker_evening">Sera</string>
+    <string name="marker_average">Media</string>
+
+    <string name="morning">Mattina</string>
+    <string name="evening">Sera</string>
+
+    <string name="dialog_add_glucose">Aggiungi glicemia</string>
+    <string name="dialog_save">Salva</string>
+    <string name="dialog_cancel">Annulla</string>
+
+    <string name="date_next">Avanti</string>
+    <string name="date_apply">Applica</string>
+
+    <string name="glucose_unit">mg/dL</string>
+
+    <string name="insight_avg_glucose">📊 Glicemia media</string>
+    <string name="insight_avg_subtitle">Media complessiva</string>
+
+    <string name="insight_peak">🔺 Picco</string>
+    <string name="insight_peak_subtitle">Valore più alto registrato</string>
+
+    <string name="insight_variability">⚖️ Variabilità</string>
+    <string name="insight_variability_subtitle">Distribuzione dei valori</string>
+
+    <string name="insight_am_pm">🌙 Mattina vs Sera</string>
+    <string name="insight_am_pm_subtitle">Andamento serale vs mattutino</string>
+
+    <string name="unit_mg_dl">mg/dL</string>
+
+</resources>

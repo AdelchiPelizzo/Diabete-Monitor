@@ -2,6 +2,7 @@ package com.example.diabeteslogger.ui.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -9,11 +10,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.ui.res.stringResource
 import com.example.diabeteslogger.ui.viewmodel.LogViewModel
 import com.example.diabeteslogger.ui.viewmodel.FilterType
 import com.github.mikephil.charting.data.Entry
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.diabeteslogger.R
+import androidx.compose.ui.text.input.KeyboardType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +79,7 @@ fun HomeScreen(
 
     Column(modifier = modifier.padding(16.dp)) {
 
-        Text("Glucose Tracker", style = MaterialTheme.typography.headlineMedium)
+        Text(stringResource(R.string.glucose_tracker), style = MaterialTheme.typography.headlineMedium)
 
         Spacer(Modifier.height(12.dp))
 
@@ -83,34 +87,51 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
 
-            val options = listOf("Week", "Month", "Year", "Range")
+            val options = listOf(
+                FilterType.WEEK,
+                FilterType.MONTH,
+                FilterType.YEAR,
+                FilterType.CUSTOM
+            )
 
-            options.forEachIndexed { index, label ->
+            options.forEachIndexed { index, filterType ->
 
-                val selected = when (label) {
-                    "Week" -> currentFilter == FilterType.WEEK
-                    "Month" -> currentFilter == FilterType.MONTH
-                    "Year" -> currentFilter == FilterType.YEAR
-                    "Range" -> currentFilter == FilterType.CUSTOM
-                    else -> false
+                val selected = currentFilter == filterType
+
+                val label = when (filterType) {
+                    FilterType.WEEK ->
+                        stringResource(R.string.filter_week)
+
+                    FilterType.MONTH ->
+                        stringResource(R.string.filter_month)
+
+                    FilterType.YEAR ->
+                        stringResource(R.string.filter_year)
+
+                    FilterType.CUSTOM ->
+                        stringResource(R.string.filter_range)
                 }
 
                 SegmentedButton(
                     selected = selected,
                     onClick = {
-                        when (label) {
-                            "Week" -> viewModel.setFilter(FilterType.WEEK)
-                            "Month" -> viewModel.setFilter(FilterType.MONTH)
-                            "Year" -> viewModel.setFilter(FilterType.YEAR)
 
-                            "Range" -> {
-                                viewModel.setFilter(FilterType.CUSTOM)
-                                showDatePicker = true
-                                isPickingStart = true
-                            }
+                        if (filterType == FilterType.CUSTOM) {
+
+                            viewModel.setFilter(FilterType.CUSTOM)
+
+                            showDatePicker = true
+                            isPickingStart = true
+
+                        } else {
+
+                            viewModel.setFilter(filterType)
                         }
                     },
-                    shape = SegmentedButtonDefaults.itemShape(index, options.size)
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index,
+                        options.size
+                    )
                 ) {
                     Text(label)
                 }
@@ -134,14 +155,14 @@ fun HomeScreen(
                 onClick = { showDialog = true },
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Add glucose")
+                Text(stringResource(R.string.add_reading))
             }
 
             OutlinedButton(
                 onClick = { },
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Export CSV")
+                Text(stringResource(R.string.export_csv))
             }
         }
 
@@ -168,11 +189,21 @@ fun HomeScreen(
                         val sorted = list.sortedBy { it.timestamp }
 
                         sorted.getOrNull(0)?.let {
-                            SwipeRow("🌅 Morning", it) { viewModel.deleteEntry(it) }
+                            SwipeRow(
+                                "🌅 ${stringResource(R.string.morning)}",
+                                it
+                            ) {
+                                viewModel.deleteEntry(it)
+                            }
                         }
 
                         sorted.getOrNull(1)?.let {
-                            SwipeRow("🌙 Evening", it) { viewModel.deleteEntry(it) }
+                            SwipeRow(
+                                "🌙 ${stringResource(R.string.evening)}",
+                                it
+                            ) {
+                                viewModel.deleteEntry(it)
+                            }
                         }
                     }
                 }
@@ -183,13 +214,23 @@ fun HomeScreen(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Add glucose") },
-            text = {
-                OutlinedTextField(
-                    value = inputText,
-                    onValueChange = { inputText = it.filter(Char::isDigit) },
-                    label = { Text("mg/dL") }
+            title = {
+                Text(stringResource(R.string.dialog_add_glucose))
+            },
+            text = {OutlinedTextField(
+                value = inputText,
+                onValueChange = { newValue ->
+                    if (newValue.all { it.isDigit() }) {
+                        inputText = newValue
+                    }
+                },
+                label = {
+                    Text(stringResource(R.string.glucose_unit))
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number
                 )
+            )
             },
             confirmButton = {
                 Button(onClick = {
@@ -197,12 +238,12 @@ fun HomeScreen(
                     inputText = ""
                     showDialog = false
                 }) {
-                    Text("Save")
+                    Text(stringResource(R.string.dialog_save))
                 }
             },
             dismissButton = {
                 Button(onClick = { showDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.dialog_cancel))
                 }
             }
         )
@@ -233,7 +274,12 @@ fun HomeScreen(
                         isPickingStart = true
                     }
                 }) {
-                    Text(if (isPickingStart) "Next" else "Apply")
+                    Text(
+                        if (isPickingStart)
+                            stringResource(R.string.date_next)
+                        else
+                            stringResource(R.string.date_apply)
+                    )
                 }
             }
         ) {

@@ -1,3 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DiabetesLogger</string>
+
+    <!-- App -->
+    <string name="app_name">Glucose Tracker</string>
+
+    <string name="language">Language</string>
+
+    <string name="system_default">System default</string>
+    <string name="english">English</string>
+    <string name="italian">Italian</string>
+
+    <!-- Navigation / Screens -->
+    <string name="home">Home</string>
+    <string name="analytics">Analytics</string>
+    <string name="settings">Settings</string>
+
+    <!-- Home Screen -->
+    <string name="blood_glucose">Blood glucose</string>
+    <string name="add_reading">Add reading</string>
+    <string name="no_data">No data available</string>
+    <string name="recent_readings">Recent readings</string>
+    <string name="export_csv">Export CSV</string>
+
+    <!-- Glucose Units -->
+    <string name="glucose_unit_mgdl">mg/dL</string>
+    <string name="glucose_unit_mmoll">mmol/L</string>
+
+    <!-- Analytics Screen -->
+    <string name="average_glucose">Average glucose</string>
+    <string name="time_in_range">Time in range</string>
+    <string name="highest_value">Highest value</string>
+    <string name="lowest_value">Lowest value</string>
+    <string name="insights">Insights</string>
+
+    <!-- Actions -->
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Input -->
+    <string name="enter_glucose_value">Enter glucose value</string>
+    <string name="select_date">Select date</string>
+
+    <!-- Messages / Errors -->
+    <string name="error_invalid_value">Invalid glucose value</string>
+    <string name="error_empty_value">Value cannot be empty</string>
+
+    <!-- Insights -->
+    <string name="great_control_today">Great control today</string>
+    <string name="high_readings_detected">High readings detected</string>
+    <string name="stable_glucose">Stable glucose levels</string>
+
+    <!-- Titles Buttons-->
+    <string name="glucose_tracker">Glucose Tracker</string>
+    <string name="filter_week">Week</string>
+    <string name="filter_month">Month</string>
+    <string name="filter_year">Year</string>
+    <string name="filter_range">Range</string>
+    <string name="chart_morning">Morning</string>
+    <string name="chart_evening">Evening</string>
+    <string name="chart_average">Average</string>
+    <string name="marker_unknown">Unknown</string>
+
+    <string name="marker_morning">Morning</string>
+    <string name="marker_evening">Evening</string>
+    <string name="marker_average">Average</string>
+
+    <string name="morning">Morning</string>
+    <string name="evening">Evening</string>
+
+    <string name="dialog_add_glucose">Add glucose</string>
+    <string name="dialog_save">Save</string>
+    <string name="dialog_cancel">Cancel</string>
+
+    <string name="date_next">Next</string>
+    <string name="date_apply">Apply</string>
+
+    <string name="glucose_unit">mg/dL</string>
+
+    <string name="insight_avg_glucose">📊 Average glucose</string>
+    <string name="insight_avg_subtitle">Overall average</string>
+
+    <string name="insight_peak">🔺 Peak</string>
+    <string name="insight_peak_subtitle">Highest recorded</string>
+
+    <string name="insight_variability">⚖️ Variability</string>
+    <string name="insight_variability_subtitle">Spread of values</string>
+
+    <string name="insight_am_pm">🌙 AM vs PM</string>
+    <string name="insight_am_pm_subtitle">Evening vs morning trend</string>
+
+    <string name="unit_mg_dl">mg/dL</string>
+
 </resources>

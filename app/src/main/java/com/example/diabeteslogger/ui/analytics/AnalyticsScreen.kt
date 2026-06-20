@@ -4,9 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.diabeteslogger.ui.viewmodel.LogViewModel
 import java.util.*
+import com.example.diabeteslogger.R
 
 @Composable
 fun AnalyticsScreen(
@@ -52,42 +54,45 @@ fun AnalyticsScreen(
             .padding(16.dp)
     ) {
 
-        Text("Analytics", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = stringResource(R.string.analytics),
+            style = MaterialTheme.typography.headlineMedium
+        )
 
         Spacer(Modifier.height(16.dp))
 
         InsightCardView(
             InsightCard(
-                title = "📊 Average glucose",
-                value = "${"%.1f".format(avg)} mg/dL",
-                subtitle = "Overall average",
+                title = stringResource(R.string.insight_avg_glucose),
+                value = "${"%.1f".format(avg)} ${stringResource(R.string.unit_mg_dl)}",
+                subtitle = stringResource(R.string.insight_avg_subtitle),
                 severity = InsightSeverity.LOW
             )
         )
 
         InsightCardView(
             InsightCard(
-                title = "🔺 Peak",
-                value = "$max mg/dL",
-                subtitle = "Highest recorded",
+                title = stringResource(R.string.insight_peak),
+                value = "$max ${stringResource(R.string.unit_mg_dl)}",
+                subtitle = stringResource(R.string.insight_peak_subtitle),
                 severity = InsightSeverity.MEDIUM
             )
         )
 
         InsightCardView(
             InsightCard(
-                title = "⚖️ Variability",
-                value = "$variability mg/dL",
-                subtitle = "Spread of values",
+                title = stringResource(R.string.insight_variability),
+                value = "$variability ${stringResource(R.string.unit_mg_dl)}",
+                subtitle = stringResource(R.string.insight_variability_subtitle),
                 severity = InsightSeverity.MEDIUM
             )
         )
 
         InsightCardView(
             InsightCard(
-                title = "🌙 AM vs PM",
-                value = "${"%.1f".format(amPmDiff)} mg/dL",
-                subtitle = "Evening vs morning trend",
+                title = stringResource(R.string.insight_am_pm),
+                value = "${"%.1f".format(amPmDiff)} ${stringResource(R.string.unit_mg_dl)}",
+                subtitle = stringResource(R.string.insight_am_pm_subtitle),
                 severity = InsightSeverity.LOW
             )
         )
