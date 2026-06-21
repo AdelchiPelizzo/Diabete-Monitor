@@ -11,13 +11,19 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.ui.res.stringResource
-import com.example.diabeteslogger.ui.viewmodel.LogViewModel
-import com.example.diabeteslogger.ui.viewmodel.FilterType
-import com.github.mikephil.charting.data.Entry
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
 import java.text.SimpleDateFormat
 import java.util.*
 import com.example.diabeteslogger.R
-import androidx.compose.ui.text.input.KeyboardType
+import com.example.diabeteslogger.ui.viewmodel.LogViewModel
+import com.example.diabeteslogger.ui.viewmodel.FilterType
+import com.example.diabeteslogger.util.ExportManager
+import com.example.diabeteslogger.util.ExportType
+import com.github.mikephil.charting.data.Entry
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,17 +32,53 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
 
-    var showDatePicker by remember { mutableStateOf(false) }
-    var tempStart by remember { mutableStateOf<Long?>(null) }
-    var isPickingStart by remember { mutableStateOf(true) }
+    val context = LocalContext.current
+
+    val fileDate = remember {
+        SimpleDateFormat("yyyy_MM_dd_HH_mm", Locale.getDefault())
+            .format(Date())
+    }
 
     val filteredEntries by viewModel.filteredEntries.collectAsState()
     val currentFilter by viewModel.filter.collectAsState()
 
+    // ---------------- EXPORT (CSV) ----------------
+    val csvLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/csv")
+    ) { uri: Uri? ->
+        uri?.let {
+            ExportManager.export(
+                context = context,
+                type = ExportType.CSV,
+                entries = filteredEntries,
+                uri = it
+            )
+        }
+    }
+
+    // ---------------- EXPORT (PDF) ----------------
+    val pdfLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri: Uri? ->
+        uri?.let {
+            ExportManager.export(
+                context = context,
+                type = ExportType.PDF,
+                entries = filteredEntries,
+                uri = it
+            )
+        }
+    }
+
+    // ---------------- UI STATE ----------------
+    var showDatePicker by remember { mutableStateOf(false) }
+    var tempStart by remember { mutableStateOf<Long?>(null) }
+    var isPickingStart by remember { mutableStateOf(true) }
+
     var showDialog by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("") }
 
-    // ---------------- DAY GROUPING ----------------
+    // ---------------- GROUPING ----------------
     val groupedByDay = remember(filteredEntries) {
         filteredEntries.groupBy { entry ->
             Calendar.getInstance().apply {
@@ -54,7 +96,6 @@ fun HomeScreen(
         groupedByDay.keys.map { sdf.format(Date(it)) }
     }
 
-    // ---------------- AM / PM ----------------
     val morningEntries = remember(groupedByDay) {
         groupedByDay.entries.mapIndexedNotNull { index, (_, list) ->
             list.sortedBy { it.timestamp }
@@ -77,9 +118,13 @@ fun HomeScreen(
         }
     }
 
+    // ---------------- UI ----------------
     Column(modifier = modifier.padding(16.dp)) {
 
-        Text(stringResource(R.string.glucose_tracker), style = MaterialTheme.typography.headlineMedium)
+        Text(
+            stringResource(R.string.glucose_tracker),
+            style = MaterialTheme.typography.headlineMedium
+        )
 
         Spacer(Modifier.height(12.dp))
 
@@ -99,39 +144,24 @@ fun HomeScreen(
                 val selected = currentFilter == filterType
 
                 val label = when (filterType) {
-                    FilterType.WEEK ->
-                        stringResource(R.string.filter_week)
-
-                    FilterType.MONTH ->
-                        stringResource(R.string.filter_month)
-
-                    FilterType.YEAR ->
-                        stringResource(R.string.filter_year)
-
-                    FilterType.CUSTOM ->
-                        stringResource(R.string.filter_range)
+                    FilterType.WEEK -> stringResource(R.string.filter_week)
+                    FilterType.MONTH -> stringResource(R.string.filter_month)
+                    FilterType.YEAR -> stringResource(R.string.filter_year)
+                    FilterType.CUSTOM -> stringResource(R.string.filter_range)
                 }
 
                 SegmentedButton(
                     selected = selected,
                     onClick = {
-
                         if (filterType == FilterType.CUSTOM) {
-
                             viewModel.setFilter(FilterType.CUSTOM)
-
                             showDatePicker = true
                             isPickingStart = true
-
                         } else {
-
                             viewModel.setFilter(filterType)
                         }
                     },
-                    shape = SegmentedButtonDefaults.itemShape(
-                        index,
-                        options.size
-                    )
+                    shape = SegmentedButtonDefaults.itemShape(index, options.size)
                 ) {
                     Text(label)
                 }
@@ -149,20 +179,34 @@ fun HomeScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
 
             Button(
                 onClick = { showDialog = true },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(2f)
             ) {
                 Text(stringResource(R.string.add_reading))
             }
 
             OutlinedButton(
-                onClick = { },
+                onClick = {
+                    csvLauncher.launch("glucose_log_$fileDate.csv")
+                },
                 modifier = Modifier.weight(1f)
             ) {
                 Text(stringResource(R.string.export_csv))
+            }
+
+            OutlinedButton(
+                onClick = {
+                    pdfLauncher.launch("medical_report_$fileDate.pdf")
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(stringResource(R.string.export_pdf))
             }
         }
 
@@ -192,18 +236,14 @@ fun HomeScreen(
                             SwipeRow(
                                 "🌅 ${stringResource(R.string.morning)}",
                                 it
-                            ) {
-                                viewModel.deleteEntry(it)
-                            }
+                            ) { viewModel.deleteEntry(it) }
                         }
 
                         sorted.getOrNull(1)?.let {
                             SwipeRow(
                                 "🌙 ${stringResource(R.string.evening)}",
                                 it
-                            ) {
-                                viewModel.deleteEntry(it)
-                            }
+                            ) { viewModel.deleteEntry(it) }
                         }
                     }
                 }
@@ -211,26 +251,20 @@ fun HomeScreen(
         }
     }
 
+    // ---------------- DIALOG ----------------
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = {
-                Text(stringResource(R.string.dialog_add_glucose))
-            },
-            text = {OutlinedTextField(
-                value = inputText,
-                onValueChange = { newValue ->
-                    if (newValue.all { it.isDigit() }) {
-                        inputText = newValue
-                    }
-                },
-                label = {
-                    Text(stringResource(R.string.glucose_unit))
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number
+            title = { Text(stringResource(R.string.dialog_add_glucose)) },
+            text = {
+                OutlinedTextField(
+                    value = inputText,
+                    onValueChange = {
+                        if (it.all(Char::isDigit)) inputText = it
+                    },
+                    label = { Text(stringResource(R.string.glucose_unit)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
-            )
             },
             confirmButton = {
                 Button(onClick = {
@@ -249,6 +283,7 @@ fun HomeScreen(
         )
     }
 
+    // ---------------- DATE PICKER ----------------
     val state = rememberDatePickerState()
 
     if (showDatePicker) {
@@ -315,8 +350,8 @@ private fun SwipeRow(
                 Column(Modifier.padding(12.dp)) {
                     Text("$label: ${entry.value}")
                     Text(
-                        java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
-                            .format(java.util.Date(entry.timestamp))
+                        SimpleDateFormat("HH:mm", Locale.getDefault())
+                            .format(Date(entry.timestamp))
                     )
                 }
             }

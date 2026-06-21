@@ -17,10 +17,10 @@
 
     <!-- Home Screen -->
     <string name="blood_glucose">Blood glucose</string>
-    <string name="add_reading">Add reading</string>
+    <string name="add_reading">Add Glucose</string>
     <string name="no_data">No data available</string>
     <string name="recent_readings">Recent readings</string>
-    <string name="export_csv">Export CSV</string>
+    <string name="export_csv">CSV</string>
 
     <!-- Glucose Units -->
     <string name="glucose_unit_mgdl">mg/dL</string>
@@ -70,7 +70,7 @@
     <string name="morning">Morning</string>
     <string name="evening">Evening</string>
 
-    <string name="dialog_add_glucose">Add glucose</string>
+    <string name="dialog_add_glucose">Glucose</string>
     <string name="dialog_save">Save</string>
     <string name="dialog_cancel">Cancel</string>
 
@@ -92,5 +92,13 @@
     <string name="insight_am_pm_subtitle">Evening vs morning trend</string>
 
     <string name="unit_mg_dl">mg/dL</string>
+
+    <string name="csv_id">id</string>
+    <string name="csv_value">value</string>
+    <string name="csv_timestamp">timestamp</string>
+    <string name="csv_date">date</string>
+
+    <string name="csv_export_success">CSV exported successfully</string>
+    <string name="export_pdf">PDF</string>
 
 </resources>

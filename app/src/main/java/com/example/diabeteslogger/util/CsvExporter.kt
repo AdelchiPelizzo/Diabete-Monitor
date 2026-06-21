@@ -6,6 +6,7 @@ import com.example.diabeteslogger.data.local.GlucoseEntry
 import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.diabeteslogger.R
 
 object CsvExporter {
 
@@ -19,10 +20,15 @@ object CsvExporter {
         context.contentResolver.openOutputStream(uri)?.use { output ->
             val writer = OutputStreamWriter(output)
 
-            // Header
-            writer.append("id,value,timestamp,date\n")
+            // HEADER (localized)
+            writer.append(
+                "${context.getString(R.string.csv_id)}," +
+                        "${context.getString(R.string.csv_value)}," +
+                        "${context.getString(R.string.csv_timestamp)}," +
+                        "${context.getString(R.string.csv_date)}\n"
+            )
 
-            // Rows
+            // ROWS
             entries.forEach { entry ->
                 writer.append("${entry.id},")
                 writer.append("${entry.value},")
