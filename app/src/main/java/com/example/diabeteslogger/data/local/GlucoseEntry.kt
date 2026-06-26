@@ -12,5 +12,8 @@ data class GlucoseEntry(
     val timestamp: Long,
 
     // NEW FIELD
-    val session: String // "AM" or "PM"
+    val session: String, // "AM" or "PM"
+
+    // FUTURE-PROOF PLACEHOLDER
+    val type: String = "glucose"
 )

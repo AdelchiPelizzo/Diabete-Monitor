@@ -91,14 +91,19 @@
     <string name="insight_am_pm">🌙 AM vs PM</string>
     <string name="insight_am_pm_subtitle">Evening vs morning trend</string>
 
+    <string name="tir_title">🎯 Time in Range</string>
+
     <string name="unit_mg_dl">mg/dL</string>
 
     <string name="csv_id">id</string>
     <string name="csv_value">value</string>
     <string name="csv_timestamp">timestamp</string>
     <string name="csv_date">date</string>
+    <string name="csv_type">type</string>
 
     <string name="csv_export_success">CSV exported successfully</string>
     <string name="export_pdf">PDF</string>
+
+    <string name="app_slogan">Track • Analyze • Improve</string>
 
 </resources>

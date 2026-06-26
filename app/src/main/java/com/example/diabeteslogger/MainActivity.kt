@@ -20,6 +20,12 @@ import com.example.diabeteslogger.ui.viewmodel.SettingsViewModel
 import com.example.diabeteslogger.util.LocaleManager
 import kotlinx.coroutines.launch
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.example.diabeteslogger.ui.splash.SplashScreen
 
 class MainActivity : AppCompatActivity() {
 
@@ -58,12 +64,31 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContent {
-            Scaffold { innerPadding ->
-                MainScreen(
-                    viewModel = viewModel,
-                    settingsViewModel = settingsViewModel,
-                    modifier = Modifier.padding(innerPadding)
+
+            var showSplash by remember {
+                mutableStateOf(true)
+            }
+
+            LaunchedEffect(Unit) {
+                kotlinx.coroutines.delay(2000)
+                showSplash = false
+            }
+
+            if (showSplash) {
+
+                SplashScreen(
+                    onFinished = { showSplash = false }
                 )
+
+            } else {
+
+                Scaffold { innerPadding ->
+                    MainScreen(
+                        viewModel = viewModel,
+                        settingsViewModel = settingsViewModel,
+                        modifier = Modifier.padding(innerPadding)
+                    )
+                }
             }
         }
     }

@@ -90,14 +90,19 @@
     <string name="insight_am_pm">🌙 Mattina vs Sera</string>
     <string name="insight_am_pm_subtitle">Andamento serale vs mattutino</string>
 
+    <string name="tir_title">🎯 Tempo nell’intervallo</string>
+
     <string name="unit_mg_dl">mg/dL</string>
 
     <string name="csv_id">id</string>
     <string name="csv_value">valore</string>
     <string name="csv_timestamp">timestamp</string>
     <string name="csv_date">data</string>
+    <string name="csv_type">tipo</string>
 
     <string name="csv_export_success">CSV esportato con successo</string>
     <string name="export_pdf">PDF</string>
+
+    <string name="app_slogan">Monitora • Analizza • Migliora</string>
 
 </resources>

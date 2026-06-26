@@ -23,15 +23,17 @@ object CsvExporter {
             // HEADER (localized)
             writer.append(
                 "${context.getString(R.string.csv_id)}," +
-                        "${context.getString(R.string.csv_value)}," +
-                        "${context.getString(R.string.csv_timestamp)}," +
-                        "${context.getString(R.string.csv_date)}\n"
+                "${context.getString(R.string.csv_value)}," +
+                "${context.getString(R.string.csv_type)}," +
+                "${context.getString(R.string.csv_timestamp)}," +
+                "${context.getString(R.string.csv_date)}\n"
             )
 
             // ROWS
             entries.forEach { entry ->
                 writer.append("${entry.id},")
                 writer.append("${entry.value},")
+                writer.append("${entry.type},")
                 writer.append("${entry.timestamp},")
                 writer.append("${sdf.format(Date(entry.timestamp))}\n")
             }

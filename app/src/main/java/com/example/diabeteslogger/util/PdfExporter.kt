@@ -42,10 +42,21 @@ object PdfExporter {
 
         // SUMMARY
         val values = entries.map { it.value }
+        val types = entries.map { it.type }.distinct()
+
+        val typeText = if (types.size == 1) {
+            types.first()
+        } else {
+            "mixed (${types.joinToString()})"
+        }
+
         val avg = values.average()
         val max = values.maxOrNull() ?: 0
         val min = values.minOrNull() ?: 0
         val variability = max - min
+
+        canvas.drawText("Type: $typeText", 40f, y.toFloat(), paint)
+        y += 20
 
         canvas.drawText("Average glucose: %.1f mg/dL".format(avg), 40f, y.toFloat(), paint)
         y += 20

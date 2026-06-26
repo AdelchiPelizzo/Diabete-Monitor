@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [GlucoseEntry::class],
-    version = 1
+    version = 2
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -24,7 +24,8 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "glucose_db"
                 )
-                    .fallbackToDestructiveMigration()
+                    .addMigrations()
+                    // NO fallbackToDestructiveMigration()
                     .build().also {
                     INSTANCE = it
                 }

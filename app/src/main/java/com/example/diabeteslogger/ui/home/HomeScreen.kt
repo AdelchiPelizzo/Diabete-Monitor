@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
+import androidx.compose.ui.Alignment
 import java.text.SimpleDateFormat
 import java.util.*
 import com.example.diabeteslogger.R
@@ -24,6 +25,9 @@ import com.example.diabeteslogger.ui.viewmodel.FilterType
 import com.example.diabeteslogger.util.ExportManager
 import com.example.diabeteslogger.util.ExportType
 import com.github.mikephil.charting.data.Entry
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,10 +125,22 @@ fun HomeScreen(
     // ---------------- UI ----------------
     Column(modifier = modifier.padding(16.dp)) {
 
-        Text(
-            stringResource(R.string.glucose_tracker),
-            style = MaterialTheme.typography.headlineMedium
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.glucose_tracker),
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            Image(
+                painter = painterResource(R.drawable.logo),
+                contentDescription = null,
+                modifier = Modifier.size(40.dp)
+            )
+        }
 
         Spacer(Modifier.height(12.dp))
 
