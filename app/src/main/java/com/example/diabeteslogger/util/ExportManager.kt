@@ -6,9 +6,10 @@ import com.example.diabeteslogger.data.local.GlucoseEntry
 import com.example.diabeteslogger.util.CsvExporter
 
 enum class ExportType {
-    CSV, PDF
+    CSV,
+    PDF,
+    JSON_BACKUP
 }
-
 object ExportManager {
 
     fun export(
@@ -20,6 +21,7 @@ object ExportManager {
         when (type) {
             ExportType.CSV -> CsvExporter.export(context, entries, uri)
             ExportType.PDF -> PdfExporter.export(context, entries, uri)
+            ExportType.JSON_BACKUP -> JsonBackupExporter.export(context, entries, uri)
         }
     }
 }
