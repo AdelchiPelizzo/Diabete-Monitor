@@ -1,5 +1,6 @@
 package com.example.diabeteslogger.ui.settings
 
+import android.R.attr.text
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,23 @@ import com.example.diabeteslogger.ui.viewmodel.SettingsViewModel
 import com.example.diabeteslogger.util.ExportManager
 import com.example.diabeteslogger.util.ExportType
 
+import android.net.Uri
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Upload
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import java.io.BufferedReader
+
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel
@@ -50,9 +68,53 @@ fun SettingsScreen(
         }
     }
 
+    var pendingJson by remember { mutableStateOf<String?>(null) }
+    var showDialog by remember { mutableStateOf(false) }
+
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+
+        uri?.let {
+            val inputStream = context.contentResolver.openInputStream(it)
+            val json = inputStream?.bufferedReader()?.use { it.readText() }
+
+            if (json != null) {
+                pendingJson = json
+                showDialog = true
+            }
+        }
+    }
+
     Column(modifier = Modifier.padding(16.dp)) {
 
+        Text(
+            text = stringResource(R.string.settings)+" ⚙️ ",
+            style = MaterialTheme.typography.headlineSmall,
+            fontSize = MaterialTheme.typography.headlineMedium.fontSize
+        )
+
+        Spacer(modifier = Modifier.height(30.dp))
+
         // ---------------- LANGUAGE SECTION ----------------
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+
+            Text(
+                text = stringResource(R.string.language),
+                style = MaterialTheme.typography.titleLarge,
+
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Icon(
+                imageVector = Icons.Default.Language,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
         LanguageOption(
             text = stringResource(R.string.system_default),
@@ -78,8 +140,9 @@ fun SettingsScreen(
         // ---------------- BACKUP SECTION ----------------
 
         Text(
-            text = "Data Backup",
-            modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+            text = stringResource(R.string.data_backup) + " 💾",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 32.dp, bottom = 12.dp)
         )
 
         Card(
@@ -89,8 +152,52 @@ fun SettingsScreen(
                     exportLauncher.launch("diabete_monitor_backup.json")
                 }
         ) {
-            Row(modifier = Modifier.padding(16.dp)) {
-                Text("Export JSON Backup")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(18.dp),
+                horizontalArrangement = Arrangement.Center
+            ){
+                Icon(Icons.Default.Upload, contentDescription = "Export Backup")
+                Text(
+                    text = stringResource(R.string.export_json_backup),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+        if (showDialog && pendingJson != null) {
+            RestoreConfirmDialog(
+                onConfirm = {
+                    viewModel.restoreBackup(pendingJson!!, replace = true)
+                    showDialog = false
+                    pendingJson = null
+                },
+                onCancel = {
+                    showDialog = false
+                    pendingJson = null
+                }
+            )
+        }
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+                .clickable {
+                    importLauncher.launch(arrayOf("application/json"))
+                }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(18.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+
+                Icon(Icons.Default.Download, contentDescription = "Restore Backup")
+                Text(
+                    text = stringResource(R.string.restore_json_backup),
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
     }
@@ -119,7 +226,8 @@ private fun LanguageOption(
 
             Text(
                 text = text,
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier.padding(start = 8.dp),
+                style = MaterialTheme.typography.bodyLarge
             )
         }
     }

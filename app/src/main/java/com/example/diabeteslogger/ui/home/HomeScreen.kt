@@ -27,7 +27,7 @@ import com.example.diabeteslogger.util.ExportType
 import com.github.mikephil.charting.data.Entry
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
-
+import androidx.compose.foundation.lazy.items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,7 +84,9 @@ fun HomeScreen(
 
     // ---------------- GROUPING ----------------
     val groupedByDay = remember(filteredEntries) {
-        filteredEntries.groupBy { entry ->
+        filteredEntries
+            .sortedByDescending { it.timestamp } // 👈 IMPORTANT: global order first
+            .groupBy { entry ->
             Calendar.getInstance().apply {
                 timeInMillis = entry.timestamp
                 set(Calendar.HOUR_OF_DAY, 0)
@@ -132,7 +134,7 @@ fun HomeScreen(
         ) {
             Text(
                 text = stringResource(R.string.glucose_tracker),
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineSmall
             )
 
             Image(
@@ -228,40 +230,174 @@ fun HomeScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        LazyColumn(Modifier.height(350.dp)) {
+        Column {
 
-            groupedByDay.forEach { (dayMillis, list) ->
+            // ---------------- FIXED HEADER ----------------
 
-                item {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 10.dp)
+                ) {
 
-                    val dateLabel = SimpleDateFormat("dd/MM", Locale.getDefault())
-                        .format(Date(dayMillis))
+                    Text(
+                        text = stringResource(R.string.date),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.titleSmall
+                    )
 
-                    Column(Modifier.padding(vertical = 10.dp)) {
+                    Text(
+                        text = stringResource(R.string.morning),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.titleSmall
+                    )
 
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.primaryContainer
-                        ) {
-                            Text("📅 $dateLabel", Modifier.padding(12.dp))
+                    Text(
+                        text = stringResource(R.string.evening),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
+            }
+
+            HorizontalDivider()
+
+            // ---------------- SCROLLABLE DATA ----------------
+
+            LazyColumn(
+                modifier = Modifier.height(350.dp)
+            ) {
+
+                items(
+                    items = groupedByDay.entries.toList(),
+                    key = { it.key }
+                ) { (dayMillis, list) ->
+
+                    val dateLabel = SimpleDateFormat(
+                        "dd/MM",
+                        Locale.getDefault()
+                    ).format(Date(dayMillis))
+
+                    val sorted = list.sortedBy { it.timestamp }
+
+                    val morning = sorted.getOrNull(0)
+                    val evening = sorted.getOrNull(1)
+
+                    val dismissState = rememberSwipeToDismissBoxState(
+                        confirmValueChange = { value ->
+
+                            if (value != SwipeToDismissBoxValue.Settled) {
+
+                                morning?.let {
+                                    viewModel.deleteEntry(it)
+                                }
+
+                                evening?.let {
+                                    viewModel.deleteEntry(it)
+                                }
+
+                                true
+                            } else {
+                                false
+                            }
                         }
+                    )
 
-                        val sorted = list.sortedBy { it.timestamp }
+                    SwipeToDismissBox(
+                        state = dismissState,
+                        backgroundContent = {},
+                        modifier = Modifier.animateItem(),
+                        content = {
 
-                        sorted.getOrNull(0)?.let {
-                            SwipeRow(
-                                "🌅 ${stringResource(R.string.morning)}",
-                                it
-                            ) { viewModel.deleteEntry(it) }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+
+                                // DATE
+                                Text(
+                                    text = dateLabel,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(start = 12.dp)
+                                )
+
+                                // MORNING
+                                Box(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    morning?.let {
+
+                                        Card(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(4.dp)
+                                        ) {
+
+                                            Column(
+                                                modifier = Modifier.padding(8.dp)
+                                            ) {
+
+                                                Text(
+                                                    text = it.value.toString()
+                                                )
+
+                                                Text(
+                                                    text = SimpleDateFormat(
+                                                        "HH:mm",
+                                                        Locale.getDefault()
+                                                    ).format(Date(it.timestamp)),
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // EVENING
+                                Box(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    evening?.let {
+
+                                        Card(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(4.dp)
+                                        ) {
+
+                                            Column(
+                                                modifier = Modifier.padding(8.dp)
+                                            ) {
+
+                                                Text(
+                                                    text = it.value.toString()
+                                                )
+
+                                                Text(
+                                                    text = SimpleDateFormat(
+                                                        "HH:mm",
+                                                        Locale.getDefault()
+                                                    ).format(Date(it.timestamp)),
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
+                    )
 
-                        sorted.getOrNull(1)?.let {
-                            SwipeRow(
-                                "🌙 ${stringResource(R.string.evening)}",
-                                it
-                            ) { viewModel.deleteEntry(it) }
-                        }
-                    }
+                    HorizontalDivider()
                 }
             }
         }

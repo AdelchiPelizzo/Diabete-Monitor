@@ -2,7 +2,7 @@
 <resources>
 
     <!-- App -->
-    <string name="app_name">Monitoraggio Glicemia</string>
+    <string name="app_name">Glucosium™</string>
 
     <string name="language">Lingua</string>
 
@@ -66,8 +66,8 @@
     <string name="marker_evening">Sera</string>
     <string name="marker_average">Media</string>
 
-    <string name="morning">Mattina</string>
-    <string name="evening">Sera</string>
+    <string name="morning">🌅 Mattina</string>
+    <string name="evening">🌙 Sera</string>
 
     <string name="dialog_add_glucose">+ Glicemia</string>
     <string name="dialog_save">Salva</string>
@@ -100,9 +100,18 @@
     <string name="csv_date">data</string>
     <string name="csv_type">tipo</string>
 
+    <string name="date">📅 Data</string>
+
     <string name="csv_export_success">CSV esportato con successo</string>
     <string name="export_pdf">PDF</string>
 
+
+    <string name="app_title">Controllo Glucosio</string>
     <string name="app_slogan">Monitora • Analizza • Migliora</string>
+
+    <string name="data_backup">Gestione Dati</string>
+    <string name="export_json_backup">Salvataggio Dati per Ripristino</string>
+    <string name="restore_json_backup">Ripristino Dati</string>
+    <string name="restore_data_warning">Questa operazione sostituirà tutti i dati attuali con quelli salvati selezionati.\n\nQuesta azione e\' irreversibile.</string>
 
 </resources>

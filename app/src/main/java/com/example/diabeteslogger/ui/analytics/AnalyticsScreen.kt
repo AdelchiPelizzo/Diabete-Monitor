@@ -72,7 +72,7 @@ fun AnalyticsScreen(
 
             Text(
                 text = stringResource(R.string.analytics),
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineSmall
             )
 
             Image(

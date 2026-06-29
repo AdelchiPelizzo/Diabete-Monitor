@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 class GlucoseRepository(
     private val dao: GlucoseDao
 ) {
+
     fun getAll(): Flow<List<GlucoseEntry>> = dao.getAll()
 
     suspend fun insert(value: Int) {
@@ -26,6 +27,14 @@ class GlucoseRepository(
                 session = session
             )
         )
+    }
+
+    suspend fun insertAll(entries: List<GlucoseEntry>) {
+        entries.forEach { dao.insert(it) }
+    }
+
+    suspend fun clearAll() {
+        dao.deleteAll()
     }
 
     suspend fun delete(entry: GlucoseEntry) {

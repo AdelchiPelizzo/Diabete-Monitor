@@ -1,5 +1,6 @@
 package com.example.diabeteslogger.ui.splash
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -12,6 +13,8 @@ import kotlinx.coroutines.delay
 import androidx.compose.material3.MaterialTheme
 import com.example.diabeteslogger.R
 import kotlin.time.Duration.Companion.milliseconds
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun SplashScreen(
@@ -19,7 +22,7 @@ fun SplashScreen(
 ) {
 
     LaunchedEffect(Unit) {
-        delay(2000.milliseconds)
+        delay(3000.milliseconds)
         onFinished()
     }
 
@@ -34,6 +37,21 @@ fun SplashScreen(
         Text(
             text = stringResource(R.string.app_name),
             style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = stringResource(R.string.app_name),
+            modifier = Modifier.size(140.dp),
+            contentScale = ContentScale.Fit
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        Text(
+            text = stringResource(R.string.app_title),
+            style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface
         )
 

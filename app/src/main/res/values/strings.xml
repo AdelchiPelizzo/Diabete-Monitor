@@ -2,7 +2,7 @@
 <resources>
 
     <!-- App -->
-    <string name="app_name">Glucose Tracker</string>
+    <string name="app_name">Glucosium™</string>
 
     <string name="language">Language</string>
 
@@ -67,8 +67,8 @@
     <string name="marker_evening">Evening</string>
     <string name="marker_average">Average</string>
 
-    <string name="morning">Morning</string>
-    <string name="evening">Evening</string>
+    <string name="morning">🌅 Morning</string>
+    <string name="evening">🌙 Evening</string>
 
     <string name="dialog_add_glucose">Glucose</string>
     <string name="dialog_save">Save</string>
@@ -101,9 +101,16 @@
     <string name="csv_date">date</string>
     <string name="csv_type">type</string>
 
+    <string name="date">📅 Date</string>
+
     <string name="csv_export_success">CSV exported successfully</string>
     <string name="export_pdf">PDF</string>
 
+    <string name="app_title">Glucose Monitor</string>
     <string name="app_slogan">Track • Analyze • Improve</string>
+    <string name="data_backup">Data Management</string>
+    <string name="export_json_backup">Export JSON Backup</string>
+    <string name="restore_json_backup">Restore JSON Backup</string>
+    <string name="restore_data_warning">This will replace all current data with the selected backup.\n\nThis action cannot be undone.</string>
 
 </resources>

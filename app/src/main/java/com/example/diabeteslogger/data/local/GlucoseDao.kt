@@ -1,9 +1,6 @@
 package com.example.diabeteslogger.data.local
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -17,4 +14,8 @@ interface GlucoseDao {
 
     @Delete
     suspend fun delete(entry: GlucoseEntry)
+
+    // ✅ ADD THIS
+    @Query("DELETE FROM glucose_entries")
+    suspend fun deleteAll()
 }
