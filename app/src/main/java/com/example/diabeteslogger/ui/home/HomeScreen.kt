@@ -273,8 +273,7 @@ fun HomeScreen(
             ) {
 
                 items(
-                    items = groupedByDay.entries.toList(),
-                    key = { it.key }
+                    items = groupedByDay.entries.toList().sortedByDescending { it.key }
                 ) { (dayMillis, list) ->
 
                     val dateLabel = SimpleDateFormat(

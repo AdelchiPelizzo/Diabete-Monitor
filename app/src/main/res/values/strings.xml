@@ -2,7 +2,7 @@
 <resources>
 
     <!-- App -->
-    <string name="app_name">Glucosium™</string>
+    <string name="app_name">Glucosium</string>
 
     <string name="language">Language</string>
 
